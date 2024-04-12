@@ -17610,8 +17610,32 @@ static bool DockNodeIsDropAllowedOne(ImGuiWindow* payload, ImGuiWindow* host_win
 
 static bool ImGui::DockNodeIsDropAllowed(ImGuiWindow* host_window, ImGuiWindow* root_payload)
 {
-    if (root_payload->DockNodeAsHost && root_payload->DockNodeAsHost->IsSplitNode()) // FIXME-DOCK: Missing filtering
-        return true;
+    if (root_payload->DockNodeAsHost && root_payload->DockNodeAsHost->IsSplitNode()) { // WIP code. Fix splitnode and attaching everywhere
+        ImGuiDockNode* node1 = root_payload->DockNodeAsHost->ChildNodes[0];
+        ImGuiDockNode* node2 = root_payload->DockNodeAsHost->ChildNodes[1];
+
+        bool flag1 = false;
+        bool flag2 = false;
+
+        for (int payload_n = 0; payload_n < node1->Windows.Size; payload_n++)
+        {
+            ImGuiWindow* payload = node1->Windows[payload_n];
+            if (DockNodeIsDropAllowedOne(payload, host_window)) {
+                flag1 = true;
+                break;
+            }
+        }
+
+        for (int payload_n = 0; payload_n < node2->Windows.Size; payload_n++)
+        {
+            ImGuiWindow* payload = node2->Windows[payload_n];
+            if (DockNodeIsDropAllowedOne(payload, host_window)) {
+                flag2 = true;
+                break;
+            }
+        }
+        return flag1 && flag2;
+    }
 
     const int payload_count = root_payload->DockNodeAsHost ? root_payload->DockNodeAsHost->Windows.Size : 1;
     for (int payload_n = 0; payload_n < payload_count; payload_n++)
